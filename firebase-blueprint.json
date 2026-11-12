@@ -1,0 +1,308 @@
+{
+  "entities": {
+    "UserAccount": {
+      "title": "UserAccount",
+      "description": "Represents the authenticated user's studio account profile created on sign-up or sign-in.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated user."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Full name or studio owner name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address associated with the user's Google account."
+        },
+        "studioRole": {
+          "type": "string",
+          "description": "Role or title of the account holder (e.g., Lead Photographer, Studio Owner)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of account creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last profile update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "displayName",
+        "email",
+        "studioRole",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "BusinessProfile": {
+      "title": "BusinessProfile",
+      "description": "Represents a photography business or studio profile managed by the user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated user who owns this business profile."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the photography business."
+        },
+        "category": {
+          "type": "string",
+          "description": "Specialty or studio category (e.g., Weddings, Portraits, Events, Commercial)."
+        },
+        "defaultPricePerPicture": {
+          "type": "number",
+          "description": "Default unit price per picture for quick transaction entry."
+        },
+        "monthlyTarget": {
+          "type": "number",
+          "description": "Monthly revenue goal for target progress tracking."
+        },
+        "accentColorHex": {
+          "type": "string",
+          "description": "Hex color code for visual badge differentiation."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "category",
+        "defaultPricePerPicture",
+        "monthlyTarget",
+        "accentColorHex",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClientProfile": {
+      "title": "ClientProfile",
+      "description": "Represents a photography client in the CRM directory for a specific business profile.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated user who owns this client record."
+        },
+        "businessId": {
+          "type": "string",
+          "description": "The ID of the BusinessProfile this client belongs to."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the client."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Client phone number used for CRM contact and accounting lookup."
+        },
+        "email": {
+          "type": "string",
+          "description": "Optional email address of the client."
+        },
+        "notes": {
+          "type": "string",
+          "description": "General client preferences, package notes, or shoot details."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "businessId",
+        "name",
+        "phoneNumber",
+        "email",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClientInteraction": {
+      "title": "ClientInteraction",
+      "description": "Represents a timestamped CRM interaction log entry for a client.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated user who owns this interaction log."
+        },
+        "businessId": {
+          "type": "string",
+          "description": "The ID of the BusinessProfile associated with this interaction."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "The ID of the ClientProfile this interaction belongs to."
+        },
+        "clientName": {
+          "type": "string",
+          "description": "Name of the client at the time of logging."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["CALL", "SHOOT", "DELIVERY", "FOLLOW_UP", "INQUIRY", "NOTE"],
+          "description": "Category of the client interaction."
+        },
+        "summary": {
+          "type": "string",
+          "description": "Detailed interaction log note."
+        },
+        "interactionDateMillis": {
+          "type": "integer",
+          "description": "Epoch milliseconds of when the interaction took place."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "businessId",
+        "clientId",
+        "clientName",
+        "type",
+        "summary",
+        "interactionDateMillis",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PhotoTransaction": {
+      "title": "PhotoTransaction",
+      "description": "Represents an accounting transaction recording picture count, unit price, customer phone, and payment method.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated user who owns this transaction."
+        },
+        "businessId": {
+          "type": "string",
+          "description": "The ID of the BusinessProfile this transaction belongs to."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Optional ID of the linked ClientProfile (or empty string if unlinked)."
+        },
+        "clientName": {
+          "type": "string",
+          "description": "Display name of the customer."
+        },
+        "customerPhone": {
+          "type": "string",
+          "description": "Phone number of the customer for this transaction."
+        },
+        "transactionDateMillis": {
+          "type": "integer",
+          "description": "Epoch milliseconds representing the transaction date."
+        },
+        "yearMonth": {
+          "type": "string",
+          "description": "YYYY-MM string used for monthly financial reporting."
+        },
+        "pictureCount": {
+          "type": "integer",
+          "description": "Number of pictures included in this transaction."
+        },
+        "pricePerPicture": {
+          "type": "number",
+          "description": "Price charged per picture."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total earnings calculated from pictureCount * pricePerPicture."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["CASH", "BANK_TRANSFER"],
+          "description": "Payment method used by the customer."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional invoice or shoot notes."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "businessId",
+        "clientId",
+        "clientName",
+        "customerPhone",
+        "transactionDateMillis",
+        "yearMonth",
+        "pictureCount",
+        "pricePerPicture",
+        "totalAmount",
+        "paymentMethod",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserAccount",
+      "description": "Authenticated user account profile document."
+    },
+    "/users/{userId}/businesses/{businessId}": {
+      "schema": "BusinessProfile",
+      "description": "User-scoped photography business profiles."
+    },
+    "/users/{userId}/clients/{clientId}": {
+      "schema": "ClientProfile",
+      "description": "User-scoped CRM client records associated with a business profile."
+    },
+    "/users/{userId}/interactions/{interactionId}": {
+      "schema": "ClientInteraction",
+      "description": "User-scoped CRM client interaction logs."
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "PhotoTransaction",
+      "description": "User-scoped accounting transactions for photography shoots."
+    }
+  }
+}

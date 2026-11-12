@@ -1,0 +1,213 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isNumber(val) {
+      return val is int || val is float;
+    }
+
+    function isValidTimestamp(val) {
+      return val is timestamp && val <= request.time + duration.value(1, 'h');
+    }
+
+    function isValidUserAccount(data, userId) {
+      return data.keys().hasAll([
+        'userId', 'displayName', 'email', 'studioRole', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId', 'displayName', 'email', 'studioRole', 'createdAt', 'updatedAt'
+      ]) &&
+      data.userId is string && data.userId == userId && data.userId == request.auth.uid &&
+      data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 120 &&
+      data.email is string && data.email.size() <= 180 &&
+      data.studioRole is string && data.studioRole.size() >= 1 && data.studioRole.size() <= 100 &&
+      isValidTimestamp(data.createdAt) &&
+      isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidBusinessProfile(data, userId) {
+      return data.keys().hasAll([
+        'userId', 'name', 'category', 'defaultPricePerPicture',
+        'monthlyTarget', 'accentColorHex', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId', 'name', 'category', 'defaultPricePerPicture',
+        'monthlyTarget', 'accentColorHex', 'createdAt', 'updatedAt'
+      ]) &&
+      data.userId is string && data.userId == userId && data.userId == request.auth.uid &&
+      data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+      data.category is string && data.category.size() >= 1 && data.category.size() <= 100 &&
+      isNumber(data.defaultPricePerPicture) && data.defaultPricePerPicture >= 0 && data.defaultPricePerPicture <= 1000000000 &&
+      isNumber(data.monthlyTarget) && data.monthlyTarget >= 0 && data.monthlyTarget <= 10000000000 &&
+      data.accentColorHex is string && data.accentColorHex.size() >= 1 && data.accentColorHex.size() <= 32 &&
+      isValidTimestamp(data.createdAt) &&
+      isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidClientProfile(data, userId) {
+      return data.keys().hasAll([
+        'userId', 'businessId', 'name', 'phoneNumber',
+        'email', 'notes', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId', 'businessId', 'name', 'phoneNumber',
+        'email', 'notes', 'createdAt', 'updatedAt'
+      ]) &&
+      data.userId is string && data.userId == userId && data.userId == request.auth.uid &&
+      isValidId(data.businessId) &&
+      data.name is string && data.name.size() >= 1 && data.name.size() <= 150 &&
+      data.phoneNumber is string && data.phoneNumber.size() >= 1 && data.phoneNumber.size() <= 60 &&
+      data.email is string && data.email.size() <= 180 &&
+      data.notes is string && data.notes.size() <= 2000 &&
+      isValidTimestamp(data.createdAt) &&
+      isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidClientInteraction(data, userId) {
+      return data.keys().hasAll([
+        'userId', 'businessId', 'clientId', 'clientName',
+        'type', 'summary', 'interactionDateMillis', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId', 'businessId', 'clientId', 'clientName',
+        'type', 'summary', 'interactionDateMillis', 'createdAt', 'updatedAt'
+      ]) &&
+      data.userId is string && data.userId == userId && data.userId == request.auth.uid &&
+      isValidId(data.businessId) &&
+      isValidId(data.clientId) &&
+      data.clientName is string && data.clientName.size() >= 1 && data.clientName.size() <= 150 &&
+      data.type is string && data.type in ['CALL', 'SHOOT', 'DELIVERY', 'FOLLOW_UP', 'INQUIRY', 'NOTE'] &&
+      data.summary is string && data.summary.size() >= 1 && data.summary.size() <= 2000 &&
+      data.interactionDateMillis is int && data.interactionDateMillis > 0 &&
+      isValidTimestamp(data.createdAt) &&
+      isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidPhotoTransaction(data, userId) {
+      return data.keys().hasAll([
+        'userId', 'businessId', 'clientId', 'clientName', 'customerPhone',
+        'transactionDateMillis', 'yearMonth', 'pictureCount', 'pricePerPicture',
+        'totalAmount', 'paymentMethod', 'notes', 'createdAt', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId', 'businessId', 'clientId', 'clientName', 'customerPhone',
+        'transactionDateMillis', 'yearMonth', 'pictureCount', 'pricePerPicture',
+        'totalAmount', 'paymentMethod', 'notes', 'createdAt', 'updatedAt'
+      ]) &&
+      data.userId is string && data.userId == userId && data.userId == request.auth.uid &&
+      isValidId(data.businessId) &&
+      data.clientId is string && data.clientId.size() <= 128 &&
+      data.clientName is string && data.clientName.size() >= 1 && data.clientName.size() <= 150 &&
+      data.customerPhone is string && data.customerPhone.size() >= 1 && data.customerPhone.size() <= 60 &&
+      data.transactionDateMillis is int && data.transactionDateMillis > 0 &&
+      data.yearMonth is string && data.yearMonth.size() == 7 && data.yearMonth.matches('^[0-9]{4}-[0-9]{2}$') &&
+      data.pictureCount is int && data.pictureCount >= 1 && data.pictureCount <= 10000000 &&
+      isNumber(data.pricePerPicture) && data.pricePerPicture >= 0 && data.pricePerPicture <= 10000000000 &&
+      isNumber(data.totalAmount) && data.totalAmount >= 0 && data.totalAmount <= 100000000000 &&
+      data.paymentMethod is string && data.paymentMethod in ['CASH', 'BANK_TRANSFER'] &&
+      data.notes is string && data.notes.size() <= 2000 &&
+      isValidTimestamp(data.createdAt) &&
+      isValidTimestamp(data.updatedAt);
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUserAccount(incoming(), userId);
+      allow update: if isOwner(userId) && isValidId(userId) &&
+                       isValidUserAccount(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'displayName', 'email', 'studioRole', 'updatedAt'
+                       ]);
+      allow delete: if isOwner(userId) && isValidId(userId);
+    }
+
+    match /users/{userId}/businesses/{businessId} {
+      allow get: if isOwner(userId) && isValidId(businessId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(businessId) && isValidBusinessProfile(incoming(), userId);
+      allow update: if isOwner(userId) && isValidId(businessId) &&
+                       isValidBusinessProfile(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'name', 'category', 'defaultPricePerPicture', 'monthlyTarget', 'accentColorHex', 'updatedAt'
+                       ]);
+      allow delete: if isOwner(userId) && isValidId(businessId);
+    }
+
+    match /users/{userId}/clients/{clientId} {
+      allow get: if isOwner(userId) && isValidId(clientId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(clientId) && isValidClientProfile(incoming(), userId);
+      allow update: if isOwner(userId) && isValidId(clientId) &&
+                       isValidClientProfile(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().businessId == existing().businessId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'name', 'phoneNumber', 'email', 'notes', 'updatedAt'
+                       ]);
+      allow delete: if isOwner(userId) && isValidId(clientId);
+    }
+
+    match /users/{userId}/interactions/{interactionId} {
+      allow get: if isOwner(userId) && isValidId(interactionId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(interactionId) && isValidClientInteraction(incoming(), userId);
+      allow update: if isOwner(userId) && isValidId(interactionId) &&
+                       isValidClientInteraction(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().businessId == existing().businessId &&
+                       incoming().clientId == existing().clientId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'clientName', 'type', 'summary', 'interactionDateMillis', 'updatedAt'
+                       ]);
+      allow delete: if isOwner(userId) && isValidId(interactionId);
+    }
+
+    match /users/{userId}/transactions/{transactionId} {
+      allow get: if isOwner(userId) && isValidId(transactionId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(transactionId) && isValidPhotoTransaction(incoming(), userId);
+      allow update: if isOwner(userId) && isValidId(transactionId) &&
+                       isValidPhotoTransaction(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().businessId == existing().businessId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'clientId', 'clientName', 'customerPhone', 'transactionDateMillis',
+                         'yearMonth', 'pictureCount', 'pricePerPicture', 'totalAmount',
+                         'paymentMethod', 'notes', 'updatedAt'
+                       ]);
+      allow delete: if isOwner(userId) && isValidId(transactionId);
+    }
+  }
+}

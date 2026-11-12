@@ -1,0 +1,6 @@
+{
+  "name": "NAS Finance",
+  "description": "Personal accounting and CRM application for managing multiple photography businesses with client interaction logs, per-picture transaction recording, and automated monthly financial reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
